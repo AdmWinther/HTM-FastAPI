@@ -5,8 +5,12 @@ from uuid import uuid4
 from dotenv import load_dotenv
 import os
 from pydantic import BaseModel
-from pydantic.v1 import UUID4
+from passlib.context import CryptContext
 from typing_extensions import Optional
+
+# Create a new instance of CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 # create a class named user with fields name, email, password
 class User(BaseModel):
@@ -57,19 +61,42 @@ class User(BaseModel):
             password=password,
             id=id)
 
-    def isFirstNameValid(name: str):
+    @classmethod
+    def isFirstNameValid(cls, name: str):
         load_dotenv()
-        if(len(name) == 0): raise ValueError("Name must contain at least one character")
+        if len(name) == 0: raise ValueError("Name must contain at least one character")
         if not name.isalpha():
             raise ValueError("Name must contain only alphabetic characters")
-        if(len(name) > int(os.getenv("MAX_USER_NAME_LENGTH"))):
+        if len(name) > int(os.getenv("MAX_USER_NAME_LENGTH")):
             raise ValueError(f"Name must contain at most {os.getenv("MAX_USER_NAME_LENGTH")} characters")
         return True
 
-    def isLastNameValid(name: str):
+    @classmethod
+    def isLastNameValid(cls, name: str):
         load_dotenv()
-        if(len(name) == 0): raise ValueError("Last name must contain at least one character")
+        if len(name) == 0: raise ValueError("Last name must contain at least one character")
         if not name.isalpha(): raise ValueError("Last name must contain only alphabetic characters")
-        if(len(name) > int(os.getenv("MAX_USER_NAME_LENGTH"))):
+        if len(name) > int(os.getenv("MAX_USER_NAME_LENGTH")):
             raise ValueError(f"Last name must contain at most {os.getenv("MAX_USER_NAME_LENGTH")} characters")
         return True
+
+    # @classmethod
+    # def userFromDict(cls, userInfo: dict):
+    #     # Control if the dictionary has the required fields
+    #     if "name" not in userInfo:raise ValueError("Dictionary must contain a name field")
+    #     if "lastName" not in userInfo:raise ValueError("Dictionary must contain a lastName field")
+    #     if "emailAddress" not in userInfo:raise ValueError("Dictionary must contain an emailAddress field")
+    #     if "password" not in userInfo:raise ValueError("Dictionary must contain a password field")
+    #     if "id" in userInfo: raise ValueError("Dictionary must not contain an id field")
+    #     userInfo["id"] = str(uuid4())
+    #     return User(
+    #         name=userInfo["name"],
+    #         lastName=userInfo["lastName"],
+    #         emailAddress=userInfo["emailAddress"],
+    #         password=userInfo["password"],
+    #         id=userInfo["id"]
+    #     )
+
+    @classmethod
+    def get_password_hash(cls, password: str) -> str:
+        return pwd_context.hash(password)

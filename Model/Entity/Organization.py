@@ -10,7 +10,7 @@ class Organization(BaseModel):
     id: Optional[str]
     name: str
     description: str
-    adminId: str
+    superUserId: str
 
     def __init__(self,
                  id: str,

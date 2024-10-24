@@ -1,6 +1,7 @@
-from Model.Entity.Role import Role
+class MyClass:
+    @classmethod
+    def myMethod(cls):
+        print("Hello World")
 
-print(len("a.com"))
-print("a.com".index("m"))
 
-print(Role("admin"))
+MyClass.myMethod()
