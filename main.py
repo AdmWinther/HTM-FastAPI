@@ -1,12 +1,9 @@
-from sys import prefix
-from uuid import uuid4
-
 from fastapi import FastAPI
-from typing import List
 from uuid import uuid4
-from Model.Entity.User import User
-from Controller.UserController import router as userRouter
-from Controller.loginController import router as loginRouter
+from Controller.UserController import UserRouter as userRouter
+from Controller.LoginController import LoginController as loginRouter
+from Controller.SecurityMiddleware import SecurityMiddleware
+from Controller.VersionController import VersionRouter as versionRouter
 app = FastAPI()
 
 @app.get("/")
@@ -19,5 +16,8 @@ async def say_hello(name: str):
     return {"message": f"Hello {name} {uuid4()}"}
 
 
+# app.add_middleware(CSRFMiddleware, allow_origin="*", allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(SecurityMiddleware)
 app.include_router(userRouter, prefix="/api/user")
+app.include_router(versionRouter, prefix="/version")
 app.include_router(loginRouter, prefix="/login")

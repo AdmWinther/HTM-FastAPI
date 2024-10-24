@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class MyClass:
     @classmethod
     def myMethod(cls):
@@ -5,3 +8,7 @@ class MyClass:
 
 
 MyClass.myMethod()
+
+from Model.Entity.User import User
+
+print(datetime.now())
