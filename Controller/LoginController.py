@@ -1,4 +1,7 @@
+import os
+
 from fastapi import APIRouter, Form
+from starlette.responses import JSONResponse
 from Model.Entity.User import User
 from Service.UserService import UserService
 from passlib.context import CryptContext
@@ -15,12 +18,10 @@ LoginController = APIRouter()
 
 @LoginController.post("")
 async def login(username: str = Form(...), password: str = Form(...)):
-    # print("login is reached.")
-    # print(f"username is {username}")
-    # print(f"password is {password}")
+
     fetchUser = await UserService.getUserByEmail(username)
     if len(fetchUser) == 0:
-        return "Bad credential."
+        return JSONResponse(content = {"detail": "Username not found."}, status_code=401)
     hashedPass = User.get_password_hash(password)
     if verify_password(password, fetchUser[0]["password"]):
         data = {
@@ -30,7 +31,16 @@ async def login(username: str = Form(...), password: str = Form(...)):
             "name": fetchUser[0]["name"],
             "lastName": fetchUser[0]["lastName"],
         }
+
+        # # Include the CSRF token in the response headers
+        # csrf_token = "your_generated_csrf_token"
+        # headers: dict = {"x-xsrf-token": csrf_token,
+        #                  "Access-Control-Allow-Origin": f"{os.getenv('FRONTEND_URL')}"}
+
         jwtToken = create_access_token(data=data)
-        return jwtToken
+        reply: dict = {"token": jwtToken}
+
+
+        return JSONResponse(content=reply)
     else:
-        return "Bad credential."
+        return JSONResponse({"detail": "Bad credential."}, status_code=401)

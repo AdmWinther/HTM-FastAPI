@@ -1,6 +1,6 @@
 
 from http.client import HTTPException
-from fastapi import Request, Request
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
@@ -34,6 +34,11 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             print(f"token is {token}")
             isTokenValid = verifyToken(token)
             if isTokenValid == "":
+                message = "Access to a protected Endpoint authorized with a valid token"
+                print(message)
                 return response
             else:
-                return JSONResponse({"detail": f"{isTokenValid}."}, status_code=401)
+
+                message = "Access to a protected Endpoint rejected due to an invalid token"
+                print(message)
+                return JSONResponse({"detail": f"{message}."}, status_code=401)
