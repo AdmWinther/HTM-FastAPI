@@ -1,5 +1,7 @@
 from typing import List
 from fastapi import APIRouter
+from starlette.responses import JSONResponse
+
 from Service.UserService import UserService
 from Model.Entity.User import User
 
@@ -34,3 +36,9 @@ async def getUserById(userId: str):
 @UserRouter.get("/email/{emailAddress}")
 async def getUserByEmail(emailAddress: str):
     return await UserService.getUserByEmail(emailAddress)
+
+@UserRouter.get("/userType")
+async def getUserType():
+    print("UserType-get in controller")
+    data: dict = {"value": "ADMIN"}
+    return (data)

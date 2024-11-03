@@ -38,7 +38,8 @@ async def login(username: str = Form(...), password: str = Form(...)):
         #                  "Access-Control-Allow-Origin": f"{os.getenv('FRONTEND_URL')}"}
 
         jwtToken = create_access_token(data=data)
-        reply: dict = {"token": jwtToken}
+        print(f"jwtToken: {jwtToken}",)
+        reply: dict = {"value": jwtToken}
 
 
         return JSONResponse(content=reply)
