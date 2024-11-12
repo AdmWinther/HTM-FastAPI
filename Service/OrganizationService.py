@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from Service.Database import execute_query, insertIntoTable, execute_transaction
 
 class OrganizationService:
@@ -8,8 +10,16 @@ class OrganizationService:
 
     @classmethod
     async def addOrganization(cls, organizationInfo):
-        if "name" not in userInfo: raise ValueError("Dictionary must contain a name field")
-        #     if "lastName" not in userInfo:raise ValueError("Dictionary must contain a lastName field")
-        #     if "emailAddress" not in userInfo:raise ValueError("Dictionary must contain an emailAddress field")
-        #     if "password" not in userInfo:raise ValueError("Dictionary must contain a password field")
-        #     if "id" in userInfo: raise ValueError("Dictionary must not contain an id field")
+        if "organization_name" not in organizationInfo: raise ValueError("Dictionary must contain a name field")
+        if "description" not in organizationInfo: organizationInfo["description"] = ""
+        id = str(uuid4())
+        query = (f"INSERT INTO organizations (id, name, description)"
+                 f" VALUES ('{id}', '{organizationInfo['organization_name']}' ,'{organizationInfo['description']}')")
+        try:
+            operationSuccess = await insertIntoTable(query=query)
+            if operationSuccess:
+                return {"id": id, "name": organizationInfo["organization_name"], "description": organizationInfo["description"]}
+            else:
+                return {"error": "Operation failed"}
+        except Exception as e:
+            return {"error": str(e)}

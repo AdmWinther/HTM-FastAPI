@@ -13,20 +13,25 @@ async def getAllUsers():
     return await UserService.getAllUsers()
 
 @UserRouter.post("")
-async def post_user(userInfo : dict):
-    userInfo["password"] = User.get_password_hash(userInfo["password"])
-    userInfo["emailAddress"] = userInfo["emailAddress"].lower()
-    user: User = User(**userInfo)
+async def postUser(userInfo : dict):
     try:
-        return await UserService.addUser(user)
+        return await UserService.addUserByDictWithValidation(userInfo)
         # return db
     except ValueError as e:
         return {"error": str(e)}
 
 @UserRouter.get("/reset")
-async def resetDatabase():
+async def resetOnlyUserTable():
     print("resetting database")
-    return await UserService.resetDatabase()
+    user: dict = {"name": "user", "lastName": "user", "emailAddress": "user@user.com", "password": "user"}
+    admin: dict = {"name": "admin", "lastName": "admin", "emailAddress": "admin@admin.com", "password": "user"}
+    try:
+        await UserService.deleteAll()
+        await postUser(user)
+        await postUser(admin)
+        return {"message": "Database reset"}
+    except ValueError as e:
+        return {"error": str(e)}
 
 @UserRouter.get("/id/{userId}")
 async def getUserById(userId: str):
@@ -37,8 +42,17 @@ async def getUserById(userId: str):
 async def getUserByEmail(emailAddress: str):
     return await UserService.getUserByEmail(emailAddress)
 
-@UserRouter.get("/userType")
-async def getUserType():
+@UserRouter.get("/userRole")
+async def getUserRole():
     print("UserType-get in controller")
-    data: dict = {"value": "ADMIN"}
+    data: dict = {"roles": ["ADMIN"]}
     return (data)
+
+
+async def getUserRoleByUserName(username: str):
+    print("UserType-get in controller")
+    data: dict = {"roles": ["ADMIN"]}
+    return (data)
+
+def addSuperUser(userId, organizationId):
+    return UserService.addSuperUser(userId, organizationId)

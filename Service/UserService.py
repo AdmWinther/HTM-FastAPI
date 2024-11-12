@@ -14,50 +14,19 @@ class UserService:
         query = "SELECT * FROM users"
         return await Database.execute_query(query=query)
 
-
-
-    #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    # Add a user
-    # Add a user to the database
-    # Return the user that was added
-    @classmethod
-    async def addUser(cls, user: User):
-        user.emailAddress = user.emailAddress.lower()
-        exising = await cls.getUserByEmail(user.emailAddress)
-        print("existing - UserServices")
-        print(exising)
-        if(len(exising) != 0): return {"error": "The email address is already registered."}
-        query = (f"INSERT INTO users (id, name, lastName, emailAddress, password)"
-                 f" VALUES ('{user.id}', '{user.name}' ,'{user.lastName}', '{user.emailAddress}', '{user.password}')")
-        try:
-            operationSuccess = await Database.insertIntoTable(query=query)
-            if(operationSuccess):
-                return user
-            else:
-                return {"error": "Operation failed_UserService"}
-        except Exception as e:
-            return {"error_UserService": str(e)}
-
-
-
     #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     # Reset the database
     # Delete all users and add a default user and an admin user
     # Return a list of all users after the reset
     @classmethod
-    async def resetDatabase(cls):
-        print("resetting database-UserService-haha")
-        queries = ["DELETE FROM users"]
-
-        userId = str(uuid4())
-        queries.append(f"INSERT INTO users (id, name, lastName, emailAddress, password) VALUES ('{userId}', 'user', 'user', 'user@user.com' , '{User.get_password_hash("user")}')")
-
-        adminId = str(uuid4())
-        queries.append(f"INSERT INTO users (id, name, lastName, emailAddress, password) VALUES ('{adminId}', 'admin', 'admin', 'admin@admin.com' , '{User.get_password_hash("user")}')")
-
-        await Database.execute_transaction(queries)
-
-        return await cls.getAllUsers()
+    async def deleteAll(cls):
+        print("resetting database-UserService")
+        try:
+            queries = ["DELETE FROM users"]
+            await Database.execute_transaction(queries=queries)
+            return {"message": "Database reset"}
+        except Exception as e:
+            return {"error": str(e)}
 
 
 
@@ -82,3 +51,41 @@ class UserService:
 
 
     #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    # Add a user by dictionary and validate the dictionary before adding the user
+    @classmethod
+    async def addUserByDictWithValidation(cls, userInfo: dict):
+        #control if the dictionary has the required fields and the format is correct
+        try:
+            User.validateNewUserInfo(userInfo["name"], userInfo["lastName"], userInfo["emailAddress"])
+        except ValueError as e:
+            raise ValueError(e)
+
+        userInfo["emailAddress"] = userInfo["emailAddress"].lower()
+        userInfo["password"] = User.get_password_hash(userInfo["password"])
+
+        #control if the email address is already registered
+        exising = await cls.getUserByEmail(userInfo["emailAddress"])
+        print("existing - UserServices")
+        print(exising)
+        if len(exising) != 0:
+            e ="Error. The email address is already registered."
+            raise ValueError(e)
+
+        user: User = User(**userInfo)
+
+        query = (f"INSERT INTO users (id, name, lastName, emailAddress, password)"
+                 f" VALUES ('{user.id}', '{user.name}' ,'{user.lastName}', '{user.emailAddress}', '{user.password}')")
+        try:
+            operationSuccess = await Database.insertIntoTable(query=query)
+            if operationSuccess:
+                return dict(user)
+            else:
+                raise ValueError("Error. Operation failed_UserService")
+        except Exception as e:
+            raise ValueError(e)
+
+    @classmethod
+    def addSuperUser(cls, userId, organizationId):
+        query = (f"INSERT INTO superUser (userId, organizationId)"
+                 f" VALUES ('{userId}', '{organizationId}')")
+        return Database.insertIntoTable(query=query)

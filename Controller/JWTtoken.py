@@ -24,13 +24,26 @@ def verifyToken(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         print(f"payload is {payload}")
-
-        username: str = payload.get("sub")
-        user_role: str = payload.get("role")
-        return ""
+        return "valid"
     except jwt.ExpiredSignatureError:
         return "token is expired"
     except jwt.InvalidTokenError:
         return "token is invalid"
+    except Exception as e:
+        return f"error {e}"
+
+def getTokenPayload(token: str):
+    SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    ALGORITHM = os.getenv("JWT_ALGORITHM")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(f"payload is {payload}")
+        return payload
+    except jwt.ExpiredSignatureError:
+        print("the token is expired")
+        return "the token is expired"
+    except jwt.InvalidTokenError:
+        print("the token is invalid")
+        return "the token is invalid"
     except Exception as e:
         return f"error {e}"

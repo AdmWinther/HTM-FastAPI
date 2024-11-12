@@ -12,7 +12,6 @@ from typing_extensions import Optional
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-# create a class named user with fields name, email, password
 class User(BaseModel):
     # field id is optional
     id:Optional[str] = None
@@ -33,26 +32,7 @@ class User(BaseModel):
             id = str(uuid4())
 
         # check if the email address is valid
-        from Model.Entity.Email import Email
-        try:
-            isEmailValid = Email.isValidEmailAddress(emailAddress)
-            if os.getenv("VERBOSE") == "True": print(f"Email address validation returned {isEmailValid}")
-        except ValueError as e:
-            raise ValueError(e)
-
-        # Check if the name is valid
-        try:
-            isNameValid = User.isFirstNameValid(name)
-            if os.getenv("VERBOSE") == "True": print(f"First name validation returned {isNameValid}")
-        except ValueError as e:
-            raise ValueError(e)
-
-        # Check if the last name is valid
-        try:
-            isLastNameValid = User.isLastNameValid(lastName)
-            if os.getenv("VERBOSE") == "True": print(f"Last name validation returned {isNameValid}")
-        except ValueError as e:
-            raise ValueError(e)
+        self.validateNewUserInfo(name, lastName, emailAddress)
 
         super().__init__(
             name=name,
@@ -100,3 +80,25 @@ class User(BaseModel):
     @classmethod
     def get_password_hash(cls, password: str) -> str:
         return pwd_context.hash(password)
+
+    @classmethod
+    # Validate if the user information is valid and a new user object can be created from the information
+    def validateNewUserInfo(cls, name, lastName, emailAddress):
+        from Model.Entity.Email import Email
+        try:
+            isEmailValid = Email.isValidEmailAddress(emailAddress)
+            if os.getenv("VERBOSE") == "True": print(f"Email address validation returned {isEmailValid}")
+        except ValueError as e:
+            raise ValueError(e)
+        # Check if the name is valid
+        try:
+            isNameValid = User.isFirstNameValid(name)
+            if os.getenv("VERBOSE") == "True": print(f"First name validation returned {isNameValid}")
+        except ValueError as e:
+            raise ValueError(e)
+        # Check if the last name is valid
+        try:
+            isLastNameValid = User.isLastNameValid(lastName)
+            if os.getenv("VERBOSE") == "True": print(f"Last name validation returned {isLastNameValid}")
+        except ValueError as e:
+            raise ValueError(e)
