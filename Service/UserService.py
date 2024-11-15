@@ -89,3 +89,8 @@ class UserService:
         query = (f"INSERT INTO superUser (userId, organizationId)"
                  f" VALUES ('{userId}', '{organizationId}')")
         return Database.insertIntoTable(query=query)
+
+    @classmethod
+    def getUserRoleByUserName(cls, username):
+        # print("UserType-get in UserService")
+        return {"roles": ["ADMIN"]}

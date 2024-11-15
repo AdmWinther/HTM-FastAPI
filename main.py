@@ -18,6 +18,7 @@ app = FastAPI()
 
 
 # app.add_middleware(CSRFMiddleware, allow_origin="*", allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(MyCORSMiddleware)
 app.add_middleware(SecurityMiddleware)
 app.include_router(userRouter, prefix="/api/user")
 app.include_router(versionRouter, prefix="/version")
@@ -34,4 +35,4 @@ app.include_router(organizationRouter, prefix="/api/organization")
 #     allow_headers=["*"],
 # )
 
-app.add_middleware(MyCORSMiddleware)
+

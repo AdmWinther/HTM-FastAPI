@@ -1,7 +1,9 @@
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from starlette.responses import JSONResponse
+from urllib3 import request
 
+from Controller import JWTtoken
 from Service.UserService import UserService
 from Model.Entity.User import User
 
@@ -43,16 +45,19 @@ async def getUserByEmail(emailAddress: str):
     return await UserService.getUserByEmail(emailAddress)
 
 @UserRouter.get("/userRole")
-async def getUserRole():
-    print("UserType-get in controller")
-    data: dict = {"roles": ["ADMIN"]}
-    return (data)
+async def getUserRoleEndpoint(request: Request):
+    token: str = request.headers["cookie"].split("=")[1]
+    tokenPayload = JWTtoken.getTokenPayload(token)
+    print(f"FETCH usrRoles for {tokenPayload['sub']}")
+    return await getUserRoleByUserName(tokenPayload['sub'])
 
 
 async def getUserRoleByUserName(username: str):
-    print("UserType-get in controller")
+    # print("UserType-get in controller")
     data: dict = {"roles": ["ADMIN"]}
-    return (data)
+    # response = await call_next(request)
+    # response.set_body(data)
+    return UserService.getUserRoleByUserName(username)
 
 def addSuperUser(userId, organizationId):
     return UserService.addSuperUser(userId, organizationId)

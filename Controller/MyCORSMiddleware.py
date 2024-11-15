@@ -5,7 +5,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 class MyCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        # print("via MyCORSMiddleware")
+        print(f"MyCORSMiddleware is called for {request.url.path}")
         response = await call_next(request)
 
         headers = self.return_headers()
@@ -18,7 +18,7 @@ class MyCORSMiddleware(BaseHTTPMiddleware):
         # headers: dict = {"x-xsrf-token": csrf_token,
         headers: dict = {"Access-Control-Allow-Credentials": "true",
                          "Access-Control-Allow-Methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT",
-                         "Access-Control-Allow-Headers": "Content-Type, X-XSRF-TOKEN, X-CSRF-TOKEN, Authorization",
+                         "Access-Control-Allow-Headers": "Content-Type, X-XSRF-TOKEN, X-CSRF-TOKEN, credentials",
                          "Content-Type": "text/plain; charset=utf-8",
                          "Access-Control-Allow-Origin": f"{os.getenv('FRONTEND_URL')}"}
         return headers
