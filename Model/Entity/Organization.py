@@ -25,16 +25,15 @@ class Organization(BaseModel):
                  id: Optional[str],
                  name: str,
                  description: Optional[str]):
-
         try:
-            isOrganizationNameValid = Organization.isOrganizationNameValid(name)
-            if id is None:
-                id = str(uuid4())
-            super().__init__(
-                id=id,
-                name=name,
-                description=description,
-            )
+            if Organization.isOrganizationNameValid(name):
+                if id is None:
+                    id = str(uuid4())
+                super().__init__(
+                    id=id,
+                    name=name,
+                    description=description,
+                )
         except ValueError as e:
             raise ValueError(e)
 

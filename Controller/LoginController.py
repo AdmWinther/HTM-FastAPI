@@ -7,6 +7,7 @@ from Model.Entity.User import User
 from Service.UserService import UserService
 from passlib.context import CryptContext
 from Controller.JWTtoken import  create_access_token
+from Service.CSRFService import CSRFService
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -26,9 +27,11 @@ async def login(username: str = Form(...), password: str = Form(...)):
         return JSONResponse(content = {"detail": "Username not found."}, status_code=401)
     hashedPass = User.get_password_hash(password)
     if verify_password(password, fetchUser[0]["password"]):
+        userRoles = UserService.getUserRoleByUserName(username)
+        print(f"User roles: {userRoles}")
         data = {
             "sub": username,
-            "role": "user",
+            "role": userRoles["roles"],
             "id": fetchUser[0]["id"],
             "name": fetchUser[0]["name"],
             "lastName": fetchUser[0]["lastName"],
@@ -36,7 +39,13 @@ async def login(username: str = Form(...), password: str = Form(...)):
 
         jwtToken = create_access_token(data=data)
         print(f"jwtToken generated at login: {jwtToken}")
+
+        # Generate CSRF token
+        # csrfToken = await CSRFService.GenerateCSRFToken(data["id"])
         response: Response = Response()
+        #Set the CSRF token in the response header
+        #CSRF token must never be stored in the cookie
+        # response.headers["csrf_token"] = csrfToken
         response.set_cookie("jwt_token", jwtToken, httponly=True)
 
         return response

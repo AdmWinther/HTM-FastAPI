@@ -20,12 +20,13 @@ class UserService:
     # Return a list of all users after the reset
     @classmethod
     async def deleteAll(cls):
-        print("resetting database-UserService")
+        print("deleting all users")
         try:
-            queries = ["DELETE FROM users"]
-            await Database.execute_transaction(queries=queries)
-            return {"message": "Database reset"}
+            query = ["DELETE FROM users where 0=0"]
+            await Database.execute_transaction(queries=query)
+            return {"message": "Deleted all users successfully"}
         except Exception as e:
+            print(f"userService-deleteAll: {e}")
             return {"error": str(e)}
 
 
@@ -54,6 +55,7 @@ class UserService:
     # Add a user by dictionary and validate the dictionary before adding the user
     @classmethod
     async def addUserByDictWithValidation(cls, userInfo: dict):
+        #todo: add a record in table userToOrganization
         #control if the dictionary has the required fields and the format is correct
         try:
             User.validateNewUserInfo(userInfo["name"], userInfo["lastName"], userInfo["emailAddress"])
@@ -76,9 +78,9 @@ class UserService:
         query = (f"INSERT INTO users (id, name, lastName, emailAddress, password)"
                  f" VALUES ('{user.id}', '{user.name}' ,'{user.lastName}', '{user.emailAddress}', '{user.password}')")
         try:
-            operationSuccess = await Database.insertIntoTable(query=query)
+            operationSuccess = await Database.execute_query(query=query)
             if operationSuccess:
-                return dict(user)
+                return user
             else:
                 raise ValueError("Error. Operation failed_UserService")
         except Exception as e:
@@ -91,6 +93,20 @@ class UserService:
         return Database.insertIntoTable(query=query)
 
     @classmethod
-    def getUserRoleByUserName(cls, username):
+    def getUserOrganizationIdByUserId(cls, userId):
+        databaseResult  = Database.execute_query(f"SELECT * FROM userToOrganization WHERE userId = '{userId}'")
+        print(databaseResult)
+        # if(len(databaseResult) > 0):
+        #     if(databaseResult[0]["organizationId"] == 0):
+        #         return 0
+        #     else:
+        #         return databaseResult[0]["organizationId"]
         # print("UserType-get in UserService")
-        return {"roles": ["ADMIN"]}
+        return {"roles": ["ADMIN", "USER"]}
+
+    @classmethod
+    def getUserRoleByUserName(cls, username):
+        # Control if the user is a super user
+        query = f"SELECT * FROM superUser WHERE userId = '{username}'"
+        # print("UserType-get in UserService")
+        return {"roles": ["ADMIN", "USER"]}

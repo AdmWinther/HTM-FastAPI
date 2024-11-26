@@ -1,9 +1,9 @@
 #This file contains the access control for the endpoints
 #The access control is based on the user role and the endpoint
-#The access control is implemented in SecurityMiddleware.py
+#The access control is implemented in MySecurityMiddleware.py
 
 
-access = {
+accessRoles = {
     "GET": {
         "/api/user": ["ADMIN", "USER", "SUPERUSER","READ-ONLY", "READ-WRITE", "APPROVE", "REVIEW"],
         "/api/user/reset": ["ADMIN"],
@@ -19,5 +19,31 @@ access = {
     "POST": {
         "/api/user": ["ADMIN"],
         "/api/organization/new": ["ADMIN"],
+    },
+}
+
+CSRFProtection = {
+    "GET": {
+        "version": False,
+
+        "/api/user": False,
+        "/api/user/reset": True,
+        "/api/user/id/{userId}": True,
+        "/api/user/email/{emailAddress}": False,
+        "/api/user/userRole": False,
+
+        "/api/role/getAll": False,
+        "/api/role/reset": False,
+
+        "/api/organization/all": False,
+    },
+    "POST": {
+        "version": False,
+
+        "/api/user": True,
+
+        "/api/organization/new": True,
+
+        "/login": False
     },
 }

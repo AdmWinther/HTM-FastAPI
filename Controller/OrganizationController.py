@@ -5,6 +5,7 @@ from Model.Entity.Organization import Organization
 from Service.OrganizationService import OrganizationService
 from Model.Entity.User import User
 from Service.UserService import UserService
+from Service.userRoleToOrganizationService import userRoleToOrganizationService
 
 organizationRouter = APIRouter()
 
@@ -29,8 +30,8 @@ async def post_organization(organizationInfo : dict):
             "password": organizationInfo["superuser_password"]
         }
         User.validateNewUserInfo(justSuperUser["name"], justSuperUser["lastName"], justSuperUser["emailAddress"])
-
         isSuperUserEmailRegistered = await UserService.getUserByEmail(justSuperUser["emailAddress"])
+
         if len(isSuperUserEmailRegistered) > 0:
             raise ValueError("Email is already registered.")
 
@@ -43,6 +44,11 @@ async def post_organization(organizationInfo : dict):
             organizationRegister =  await OrganizationService.addOrganization(organizationInfo)
         except ValueError as e:
             raise ValueError(f"Superuser is registered but could not register organization.{e}")
+
+        try:
+            await userRoleToOrganizationService.setUserOrganization(superUserRegister["id"], organizationRegister["id"])
+        except ValueError as e:
+            raise ValueError(f"Organization and superuser are both registered but Could not add the userToOrganization.{e}")
 
         try:
             await UserController.addSuperUser(superUserRegister["id"], organizationRegister["id"])
