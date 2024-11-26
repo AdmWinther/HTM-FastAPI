@@ -11,19 +11,13 @@ class OrganizationService:
 
     @classmethod
     async def addOrganization(cls, organizationInfo):
-        if "name" not in organizationInfo: raise ValueError("organizationInfo Dictionary must contain a name field")
-        if "description" not in organizationInfo: organizationInfo["description"] = ""
-        if("id" not in organizationInfo):
-            id = str(uuid4())
-        else:
-            id = organizationInfo["id"]
-        query = (f"INSERT INTO organizations (id, name, description)"
-                 f" VALUES ('{id}', '{organizationInfo['name']}' ,'{organizationInfo['description']}')")
+        query = [(f"INSERT INTO organizations (id, name, description)"
+                 f" VALUES ('{organizationInfo['id']}', '{organizationInfo['name']}' ,'{organizationInfo['description']}')")]
         try:
-            operationSuccess = await insertIntoTable(query=query)
+            operationSuccess = await execute_transaction(queries=query)
             if operationSuccess:
                 organizationObject: Organization = Organization(
-                    id,
+                    organizationInfo["id"],
                     organizationInfo["name"],
                     organizationInfo["description"]
                 )

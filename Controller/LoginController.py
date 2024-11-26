@@ -25,7 +25,7 @@ async def login(username: str = Form(...), password: str = Form(...)):
     fetchUser = await UserService.getUserByEmail(username)
     if len(fetchUser) == 0:
         return JSONResponse(content = {"detail": "Username not found."}, status_code=401)
-    hashedPass = User.get_password_hash(password)
+
     if verify_password(password, fetchUser[0]["password"]):
         userRoles = UserService.getUserRoleByUserName(username)
         print(f"User roles: {userRoles}")

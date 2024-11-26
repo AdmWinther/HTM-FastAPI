@@ -32,7 +32,7 @@ class MyCORSMiddleware(BaseHTTPMiddleware):
         # headers: dict = {"x-xsrf-token": csrf_token,
         headers: dict = {"Access-Control-Allow-Credentials": "true",
                          "Access-Control-Allow-Methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT",
-                         "Access-Control-Allow-Headers": "Content-Type, X-XSRF-TOKEN, X-CSRF-TOKEN, credentials",
+                         "Access-Control-Allow-Headers": "Content-Type, X-XSRF-TOKEN, X-CSRF-TOKEN, credentials, Authorization",
                          "Content-Type": "text/plain; charset=utf-8",
                          "Access-Control-Allow-Origin": f"{os.getenv('FRONTEND_URL')}"}
         return headers

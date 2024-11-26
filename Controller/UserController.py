@@ -33,8 +33,8 @@ async def postUser(userInfo : dict):
 
 @UserRouter.get("/reset")
 async def resetUserTable():
-    user: dict = {"id":f"{uuid4()}", "name": "user", "lastName": "user", "emailAddress": "user@user.com", "password": "user"}
-    admin: dict = {"id":f"{uuid4()}", "name": "admin", "lastName": "admin", "emailAddress": "admin@admin.com", "password": "user"}
+    user: dict = {"id":f"{uuid4()}", "name": "user", "lastName": "user", "emailAddress": "user@user.com", "password": f"{User.get_password_hash("user")}"}
+    admin: dict = {"id":f"{uuid4()}", "name": "admin", "lastName": "admin", "emailAddress": "admin@admin.com", "password": f"{User.get_password_hash("user")}"}
     htmDict: dict = {"name": "HTM", "description": "HTM organization"}
     HtmOrganization: dict = {"id":"0","name": "HTM", "description": "HTM organization"}
     print("resetting database")
@@ -115,6 +115,3 @@ async def getUserRoleByUserName(username: str):
     # response = await call_next(request)
     # response.set_body(data)
     return UserService.getUserRoleByUserName(username)
-
-def addSuperUser(userId, organizationId):
-    return (userId, organizationId)

@@ -1,9 +1,12 @@
+from uuid import uuid4
+
 from fastapi import APIRouter
 
 from Controller import UserController
 from Model.Entity.Organization import Organization
 from Service.OrganizationService import OrganizationService
 from Model.Entity.User import User
+from Service.OrganizationalRolesService import OrganizationalRolesService
 from Service.UserService import UserService
 from Service.userRoleToOrganizationService import userRoleToOrganizationService
 
@@ -18,16 +21,18 @@ async def post_organization(organizationInfo : dict):
     print("New organization endpoint is called.")
     try:
         justOrganization = {
+            "id": str(uuid4()),
             "name": organizationInfo["organization_name"],
             "description": organizationInfo["description"]
         }
         Organization.isOrganizationNameValid(justOrganization["name"])
 
         justSuperUser = {
+            "id": str(uuid4()),
             "name": organizationInfo["superuser_name"],
             "lastName": organizationInfo["superuser_lastname"],
-            "emailAddress": organizationInfo["superuser_email"],
-            "password": organizationInfo["superuser_password"]
+            "emailAddress": organizationInfo["superuser_email"].lower(),
+            "password": User.get_password_hash(organizationInfo["superuser_password"])
         }
         User.validateNewUserInfo(justSuperUser["name"], justSuperUser["lastName"], justSuperUser["emailAddress"])
         isSuperUserEmailRegistered = await UserService.getUserByEmail(justSuperUser["emailAddress"])
@@ -36,26 +41,24 @@ async def post_organization(organizationInfo : dict):
             raise ValueError("Email is already registered.")
 
         try:
-            superUserRegister = await UserService.addUserByDictWithValidation(justSuperUser)
+            superUserRegister = await UserService.addUserByDictNoValidation(justSuperUser)
         except ValueError as e:
             raise ValueError(f"Could not register superuser.{e}")
 
         try:
-            organizationRegister =  await OrganizationService.addOrganization(organizationInfo)
+            # print(f"org_Contro: L48: justOrganization: {justOrganization}")
+            organizationRegister =  await OrganizationService.addOrganization(justOrganization)
         except ValueError as e:
             raise ValueError(f"Superuser is registered but could not register organization.{e}")
 
         try:
-            await userRoleToOrganizationService.setUserOrganization(superUserRegister["id"], organizationRegister["id"])
+            superUserRoleId = await OrganizationalRolesService.getRoleId("SUPERUSER")
+            await userRoleToOrganizationService.setUserOrganization(justSuperUser["id"], justOrganization["id"], superUserRoleId)
         except ValueError as e:
-            raise ValueError(f"Organization and superuser are both registered but Could not add the userToOrganization.{e}")
+            raise ValueError(f"Organization and superuser are both registered but Could not add the userToOrganization. {e}")
 
-        try:
-            await UserController.addSuperUser(superUserRegister["id"], organizationRegister["id"])
-        except ValueError as e:
-            raise ValueError(f"Organization and superuser are both registered but Could not add the user as superuser of the organization.{e}")
+        return {"message": "Organization and superuser are registered successfully."}
 
-        return {"message": f"Organization and superuser are registered successfully."}
 
     except ValueError as e:
-        return {"message": f"Registering the new organization failed. {e}"}
+        return {"error": str(e)}

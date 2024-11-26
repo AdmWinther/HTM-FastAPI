@@ -30,7 +30,8 @@ class OrganizationalRolesService:
     async def getRoleId(cls, roleName: str):
         query = f"SELECT id FROM organizationalRoles WHERE name = '{roleName}'"
         queryResult = await Database.execute_query(query=query)
-        return queryResult[0]["id"]
+        id: str= queryResult[0]["id"]
+        return id
 
     @classmethod
     async def getRoleName(cls, roleId: str):

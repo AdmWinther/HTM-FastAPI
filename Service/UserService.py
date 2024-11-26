@@ -54,35 +54,15 @@ class UserService:
     #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     # Add a user by dictionary and validate the dictionary before adding the user
     @classmethod
-    async def addUserByDictWithValidation(cls, userInfo: dict):
-        #todo: add a record in table userToOrganization
-        #control if the dictionary has the required fields and the format is correct
+    async def addUserByDictNoValidation(cls, user: dict):
+        query = [(f"INSERT INTO users (id, name, lastName, emailAddress, password)"
+                 f" VALUES ('{user['id']}', '{user['name']}','{user['lastName']}', '{user['emailAddress']}', '{user['password']}')")]
         try:
-            User.validateNewUserInfo(userInfo["name"], userInfo["lastName"], userInfo["emailAddress"])
-        except ValueError as e:
-            raise ValueError(e)
-
-        userInfo["emailAddress"] = userInfo["emailAddress"].lower()
-        userInfo["password"] = User.get_password_hash(userInfo["password"])
-
-        #control if the email address is already registered
-        exising = await cls.getUserByEmail(userInfo["emailAddress"])
-        print("existing - UserServices")
-        print(exising)
-        if len(exising) != 0:
-            e ="Error. The email address is already registered."
-            raise ValueError(e)
-
-        user: User = User(**userInfo)
-
-        query = (f"INSERT INTO users (id, name, lastName, emailAddress, password)"
-                 f" VALUES ('{user.id}', '{user.name}' ,'{user.lastName}', '{user.emailAddress}', '{user.password}')")
-        try:
-            operationSuccess = await Database.execute_query(query=query)
+            operationSuccess = await Database.execute_transaction(queries=query)
             if operationSuccess:
                 return user
             else:
-                raise ValueError("Error. Operation failed_UserService")
+                raise ValueError(f"Error. Operation failed_UserService: {operationSuccess}")
         except Exception as e:
             raise ValueError(e)
 

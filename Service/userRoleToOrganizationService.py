@@ -12,9 +12,9 @@ class userRoleToOrganizationService:
     @classmethod
     async def setUserOrganization(cls, userId:str, organizationId:str, roleId:str = "1"):
         print("setting user organization")
-        query = (f"INSERT INTO userRoleToOrganization (userId, organizationId, roleId)"
-                 f" VALUES ('{userId}', '{organizationId}', '{roleId}')")
-        return await Database.execute_query(query=query)
+        query = [(f"INSERT INTO userRoleToOrganization (userId, organizationId, roleId)"
+                 f" VALUES ('{userId}', '{organizationId}', '{roleId}')")]
+        return await Database.execute_transaction(queries=query)
 
     @classmethod
     def deleteAll(cls):

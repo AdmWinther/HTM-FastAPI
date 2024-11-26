@@ -42,7 +42,7 @@ CSRFProtection = {
 
         "/api/user": True,
 
-        "/api/organization/new": True,
+        "/api/organization/new": False,
 
         "/login": False
     },
