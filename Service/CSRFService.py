@@ -8,7 +8,7 @@ from Service import Database
 
 class CSRFService:
     @classmethod
-    async def GenerateCSRFToken(self, userId: str):
+    async def getCsrfToken(self, userId: str):
         try:
             CsrfToken = self.generateCSRFToken()
 

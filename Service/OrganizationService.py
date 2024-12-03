@@ -1,3 +1,4 @@
+import os
 from uuid import uuid4
 
 from Model.Entity.Organization import Organization
@@ -31,5 +32,5 @@ class OrganizationService:
     @classmethod
     def deleteAll(cls):
         query = "DELETE FROM organizations where 7=7"
-        print(query)
+        if os.getenv("VERBOSE"): print(query)
         return execute_query(query=query)

@@ -1,4 +1,5 @@
 import os
+from tabnanny import verbose
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -6,6 +7,7 @@ from starlette.responses import JSONResponse
 
 class MyCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        verbose: bool = os.getenv("VERBOSE") == "True"
         print(f"MyCORSMiddleware is called for {request.method}: {request.url.path}")
 
         #************************************************************************************************
@@ -13,10 +15,10 @@ class MyCORSMiddleware(BaseHTTPMiddleware):
         #************************************************************************************************
         # Control the request origin, the request must come from the frontend domain.
         if "Origin" not in request.headers:
-            print("No Origin in the request header")
+            if verbose: print("No Origin in the request header")
             return JSONResponse({"detail": "Unauthorized."}, status_code=401)
         if request.headers["Origin"] != os.getenv("FRONTEND_URL"):
-            print("Origin is not the frontend")
+            if verbose: print("Origin is not the frontend")
             return JSONResponse({"detail": "Unauthorized."}, status_code=401)
 
 

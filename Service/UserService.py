@@ -1,3 +1,4 @@
+from multiprocessing.managers import Array
 from uuid import uuid4
 
 from Model.Entity.User import User
@@ -67,12 +68,6 @@ class UserService:
             raise ValueError(e)
 
     @classmethod
-    def addSuperUser(cls, userId, organizationId):
-        query = (f"INSERT INTO superUser (userId, organizationId)"
-                 f" VALUES ('{userId}', '{organizationId}')")
-        return Database.insertIntoTable(query=query)
-
-    @classmethod
     def getUserOrganizationIdByUserId(cls, userId):
         databaseResult  = Database.execute_query(f"SELECT * FROM userToOrganization WHERE userId = '{userId}'")
         print(databaseResult)
@@ -85,8 +80,14 @@ class UserService:
         return {"roles": ["ADMIN", "USER"]}
 
     @classmethod
-    def getUserRoleByUserName(cls, username):
+    async def getUserRoleByUserId(cls, id):
         # Control if the user is a super user
-        query = f"SELECT * FROM superUser WHERE userId = '{username}'"
-        # print("UserType-get in UserService")
-        return {"roles": ["ADMIN", "USER"]}
+        query = f"SELECT name FROM userRoleToOrganization inner join organizationalRoles on userRoleToOrganization.roleId = organizationalRoles.id where userId = '{id}'"
+        try:
+            userRoles = await Database.execute_query(query=query)
+            userRolesArray = []
+            for role in userRoles:
+                userRolesArray.append(role["name"])
+            return userRolesArray
+        except Exception as e:
+            return {"error": str(e)}

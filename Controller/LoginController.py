@@ -7,7 +7,6 @@ from Model.Entity.User import User
 from Service.UserService import UserService
 from passlib.context import CryptContext
 from Controller.JWTtoken import  create_access_token
-from Service.CSRFService import CSRFService
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -16,10 +15,10 @@ def verify_password(plain_password, hashed_password):
     # print(plain_password, hashed_password)
     # print(f"result of comparing the plain password with hash password: {pwd_context.verify(plain_password, hashed_password)}")
     return pwd_context.verify(plain_password, hashed_password)
-LoginController = APIRouter()
+LoginRouter = APIRouter()
 
 
-@LoginController.post("")
+@LoginRouter.post("")
 async def login(username: str = Form(...), password: str = Form(...)):
 
     fetchUser = await UserService.getUserByEmail(username)
@@ -27,11 +26,11 @@ async def login(username: str = Form(...), password: str = Form(...)):
         return JSONResponse(content = {"detail": "Username not found."}, status_code=401)
 
     if verify_password(password, fetchUser[0]["password"]):
-        userRoles = UserService.getUserRoleByUserName(username)
+        userRoles = await UserService.getUserRoleByUserId(fetchUser[0]["id"])
         print(f"User roles: {userRoles}")
         data = {
             "sub": username,
-            "role": userRoles["roles"],
+            "role": userRoles,
             "id": fetchUser[0]["id"],
             "name": fetchUser[0]["name"],
             "lastName": fetchUser[0]["lastName"],

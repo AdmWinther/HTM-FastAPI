@@ -106,12 +106,5 @@ async def getUserRoleEndpoint(request: Request):
     token: str = getJwtTokenFromRequestHeader(request)
     tokenPayload = JWTtoken.getTokenPayload(token)
     print(f"FETCH usrRoles for {tokenPayload['sub']}")
-    return await getUserRoleByUserName(tokenPayload['sub'])
-
-
-async def getUserRoleByUserName(username: str):
-    # print("UserType-get in controller")
-    data: dict = {"roles": ["ADMIN"]}
-    # response = await call_next(request)
-    # response.set_body(data)
-    return UserService.getUserRoleByUserName(username)
+    userRolesArray = await UserService.getUserRoleByUserId(tokenPayload['id'])
+    return {"roles": userRolesArray}

@@ -5,30 +5,33 @@
 
 accessRoles = {
     "GET": {
-        "/api/user": ["ADMIN", "USER", "SUPERUSER","READ-ONLY", "READ-WRITE", "APPROVE", "REVIEW"],
+        "/api/user": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
         "/api/user/reset": ["ADMIN"],
         "/api/user/id/{userId}": ["ADMIN"],
         "/api/user/email/{emailAddress}": ["ADMIN"],
-        "/api/user/userRole": ["ADMIN"],
+        "/api/user/userRole": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
 
         "/api/role/getAll": ["ADMIN"],
         "/api/role/reset": ["ADMIN"],
 
         "/api/organization/all": ["ADMIN"],
+
+        "/api/csrf/": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
     "POST": {
         "/api/user": ["ADMIN"],
         "/api/organization/new": ["ADMIN"],
+        "/logout": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
 }
 
-CSRFProtection = {
+csrfProtection = {
     "GET": {
         "version": False,
 
         "/api/user": False,
-        "/api/user/reset": True,
-        "/api/user/id/{userId}": True,
+        "/api/user/reset": False,
+        "/api/user/id/{userId}": False,
         "/api/user/email/{emailAddress}": False,
         "/api/user/userRole": False,
 
@@ -36,14 +39,17 @@ CSRFProtection = {
         "/api/role/reset": False,
 
         "/api/organization/all": False,
+
+        "/api/csrf/": False
     },
     "POST": {
         "version": False,
 
-        "/api/user": True,
+        "/api/user": False,
 
-        "/api/organization/new": False,
+        "/api/organization/new": True,
 
-        "/login": False
+        "/login": False,
+        "/logout": False,
     },
 }
