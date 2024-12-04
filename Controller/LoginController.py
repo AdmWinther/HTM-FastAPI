@@ -20,7 +20,6 @@ LoginRouter = APIRouter()
 
 @LoginRouter.post("")
 async def login(username: str = Form(...), password: str = Form(...)):
-
     fetchUser = await UserService.getUserByEmail(username)
     if len(fetchUser) == 0:
         return JSONResponse(content = {"detail": "Username not found."}, status_code=401)

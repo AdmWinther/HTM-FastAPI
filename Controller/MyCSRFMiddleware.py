@@ -13,7 +13,7 @@ from Service.CSRFService import CSRFService
 class MyCSRFMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         verbose: bool = os.getenv("VERBOSE") == "True"
-        print(f"My CSRF Middleware is called for {request.method}: {request.url.path}")
+        print(f"MyCsrfMiddleware is called for {request.method}: {request.url.path}")
 
         #************************************************************************************************
         #*********************************  request destination control  ********************************
@@ -33,11 +33,14 @@ class MyCSRFMiddleware(BaseHTTPMiddleware):
                 CsrfToken = body_data["X-XSRF-TOKEN"]
                 print(f"CSRF Token is: {CsrfToken}")
                 #Control if the CSRF token is valid
-                if CSRFService.validateCSRFToken(request, CsrfToken):
+                isCsrfTokenValid = await CSRFService.validateCSRFToken(request, CsrfToken)
+                if isCsrfTokenValid:
+                    print("The endpoint is CSRF protected and a valid token is provided, redirect to the next")
                     response = await call_next(request)
                     return response
                 else:
                     return JSONResponse({"detail": "CSRF Token is invalid"}, status_code=401)
         else:
+            print("The endpoint is not CSRF protected, redirect to the next")
             response = await call_next(request)
             return response
