@@ -16,10 +16,10 @@ class MyCORSMiddleware(BaseHTTPMiddleware):
         # Control the request origin, the request must come from the frontend domain.
         if "Origin" not in request.headers:
             if verbose: print("No Origin in the request header")
-            return JSONResponse({"detail": "Unauthorized."}, status_code=401)
+            return JSONResponse({"error": "Unauthorized."}, status_code=401)
         if request.headers["Origin"] != os.getenv("FRONTEND_URL"):
             if verbose: print("Origin is not the frontend")
-            return JSONResponse({"detail": "Unauthorized."}, status_code=401)
+            return JSONResponse({"error": "Unauthorized."}, status_code=401)
 
 
         response = await call_next(request)

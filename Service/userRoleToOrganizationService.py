@@ -14,9 +14,19 @@ class userRoleToOrganizationService:
         print("setting user organization")
         query = [(f"INSERT INTO userRoleToOrganization (userId, organizationId, roleId)"
                  f" VALUES ('{userId}', '{organizationId}', '{roleId}')")]
+        print("query is : " + query[0])
         return await Database.execute_transaction(queries=query)
 
     @classmethod
     def deleteAll(cls):
         query = "DELETE FROM userRoleToOrganization where 1=1"
         return Database.execute_query(query=query)
+
+    @classmethod
+    async def getOrganizationIdByUserId(cls, userId: str):
+        query = f"SELECT organizationId FROM userRoleToOrganization WHERE userId = '{userId}'"
+        organizationIdArray = await Database.execute_query(query=query)
+        print(organizationIdArray)
+        organizationId : str = organizationIdArray[0]["organizationId"]
+        print(organizationId)
+        return organizationId

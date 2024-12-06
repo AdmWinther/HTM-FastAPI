@@ -19,17 +19,66 @@ from Model.Entity.User import User
 UserRouter = APIRouter()
 
 
-@UserRouter.get("")
-async def getAllUsers():
-    return await UserService.getAllUsers()
+@UserRouter.get("/all")
+async def getAllUsers(request : Request):
+    token: str = getJwtTokenFromRequestHeader(request)
+    tokenPayload = JWTtoken.getTokenPayload(token)
+    userRoles  = tokenPayload["role"]
+    userMainRole = userRoles[0]
+    if userMainRole == "SUPERUSER":
+        #Superuser can only see the users of its own organization
+        organizationId = await UserService.getUserOrganizationIdByUserId(tokenPayload["id"])
+        return await UserService.getAllUsersSuperUser(organizationId)
+
+    if userMainRole == "ADMIN":
+        return await UserService.getAllUsersAdmin()
+
+    return {"error": "Unauthorized"}
 
 @UserRouter.post("")
-async def postUser(userInfo : dict):
+async def postUser(userInfo : dict, request: Request):
     try:
-        return await UserService.addUserByDictWithValidation(userInfo)
-        # return db
+        #First we need to validate the userInfo fields
+        newUser: dict = {
+            "id": str(uuid4()),
+            "name": userInfo["name"],
+            "lastName": userInfo["lastName"],
+            "emailAddress": userInfo["emailAddress"].lower(),
+            "password": User.get_password_hash(userInfo["password"])
+        }
+        User.validateNewUserInfo(newUser["name"], newUser["lastName"], newUser["emailAddress"])
+
+        #control if the email is already registered for another user
+        await UserService.IsThisEmailAddressAlreadyRegistered(newUser["emailAddress"])
+
+        #now the new user data is validated and we are sure that the user email is not registered before
+        #Next step is to control if the request is coming from a superuser
+        JwtToken : str = getJwtTokenFromRequestHeader(request)
+        tokenPayload = JWTtoken.getTokenPayload(JwtToken)
+        userRoles  = tokenPayload["role"]
+        if "SUPERUSER" not in userRoles:
+            print(f"User roles: {userRoles}. As you can see Superuser is not in the roles.")
+            # Only Superuser is allowed to add users to its own organizations
+            return JSONResponse({"error": "Unauthorized"}, status = 401)
+
+        superUserOrganizationId : str = await userRoleToOrganizationService.getOrganizationIdByUserId(tokenPayload["id"])
+        try:
+            newUserRegister = await UserService.addUserByDictNoValidation(newUser)
+        except ValueError as e:
+            raise ValueError(f"Could not register superuser.{e}")
+
+        try:
+            UserRoleId = await OrganizationalRolesService.getRoleId("USER")
+            await userRoleToOrganizationService.setUserOrganization(newUser["id"],
+                                                                    superUserOrganizationId,
+                                                                    UserRoleId)
+        except ValueError as e:
+            raise ValueError(f"User is registered but could not add the userToOrganization. {e}")
+
+        return {"message": "New user is registered successfully."}
     except ValueError as e:
         return {"error": str(e)}
+
 
 @UserRouter.get("/reset")
 async def resetUserTable():

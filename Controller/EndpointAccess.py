@@ -5,7 +5,7 @@
 
 accessRoles = {
     "GET": {
-        "/api/user": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
+        "/api/user/all": ["ADMIN", "SUPERUSER", "SUPPORTER"],
         "/api/user/reset": ["ADMIN"],
         "/api/user/id/{userId}": ["ADMIN"],
         "/api/user/email/{emailAddress}": ["ADMIN"],
@@ -19,7 +19,7 @@ accessRoles = {
         "/api/csrf/": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
     "POST": {
-        "/api/user": ["ADMIN"],
+        "/api/user": ["ADMIN", "SUPERUSER"],
         "/api/organization/new": ["ADMIN"],
         "/logout": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
@@ -29,7 +29,7 @@ csrfProtection = {
     "GET": {
         "version": False,
 
-        "/api/user": False,
+        "/api/user/all": False,
         "/api/user/reset": False,
         "/api/user/id/{userId}": False,
         "/api/user/email/{emailAddress}": False,
@@ -45,7 +45,7 @@ csrfProtection = {
     "POST": {
         "version": False,
 
-        "/api/user": False,
+        "/api/user": True,
 
         "/api/organization/new": True,
 

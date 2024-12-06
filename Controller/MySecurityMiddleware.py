@@ -25,8 +25,6 @@ def isProvidedCookieValid(request: Request):
 
 async def IsUserRoleAllowedToAccessTheEndpoint(request: Request):
     JwtToken = getJwtTokenFromRequestHeader(request)
-
-
     # Get the user role from the token payload
     # The user might have multiple roles. The roles are stored in a list.
     userRole = getUserRoleFromJwtTokenPayload(JwtToken)
@@ -70,12 +68,12 @@ class MySecurityMiddleware(BaseHTTPMiddleware):
             if isCookiePresentInTheRequest(request):
                 if isProvidedCookieValid(request):
                     if await IsUserRoleAllowedToAccessTheEndpoint(request):
-                        print("Redirect to the next middleware or call the endpoint")
+                        #print("Redirect to the next middleware or call the endpoint")
                         JwtToken = getJwtTokenFromRequestHeader(request)
                         response = await call_next(request)
                         if isTokenAboutToExpire(JwtToken):
                             newJwtToken = renewToken(JwtToken)
                             response.set_cookie("jwt_token", newJwtToken, httponly=True)
                         return response
-            return JSONResponse(content={"detail": "Access Denied"}, status_code=401)
+            return JSONResponse(content={"error": "Access Denied"}, status_code=401)
 

@@ -22,7 +22,7 @@ LoginRouter = APIRouter()
 async def login(username: str = Form(...), password: str = Form(...)):
     fetchUser = await UserService.getUserByEmail(username)
     if len(fetchUser) == 0:
-        return JSONResponse(content = {"detail": "Username not found."}, status_code=401)
+        return JSONResponse(content = {"error": "Username not found."}, status_code=401)
 
     if verify_password(password, fetchUser[0]["password"]):
         userRoles = await UserService.getUserRoleByUserId(fetchUser[0]["id"])
@@ -32,7 +32,7 @@ async def login(username: str = Form(...), password: str = Form(...)):
             "role": userRoles,
             "id": fetchUser[0]["id"],
             "name": fetchUser[0]["name"],
-            "lastName": fetchUser[0]["lastName"],
+            "lastName": fetchUser[0]["lastName"]
         }
 
         jwtToken = create_access_token(data=data)
@@ -40,7 +40,7 @@ async def login(username: str = Form(...), password: str = Form(...)):
 
         # Generate CSRF token
         # csrfToken = await CSRFService.GenerateCSRFToken(data["id"])
-        response: Response = Response()
+        response: Response = JSONResponse({os.getenv("REACT_APP_LOCAL_STORAGE_USER_ROLES"): userRoles})
         #Set the CSRF token in the response header
         #CSRF token must never be stored in the cookie
         # response.headers["csrf_token"] = csrfToken
@@ -48,4 +48,4 @@ async def login(username: str = Form(...), password: str = Form(...)):
 
         return response
     else:
-        return JSONResponse({"detail": "Bad credential."}, status_code=401)
+        return JSONResponse({"error": "Bad credential."}, status_code=401)

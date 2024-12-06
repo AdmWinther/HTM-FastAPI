@@ -2,7 +2,7 @@ from multiprocessing.managers import Array
 from uuid import uuid4
 
 from Model.Entity.User import User
-from Service import Database
+from Service.Database import execute_query, insertIntoTable, execute_transaction
 import aiosqlite
 
 
@@ -11,9 +11,28 @@ class UserService:
     # Get all users
     # Return a list of all users
     @classmethod
-    async def getAllUsers(cls):
-        query = "SELECT * FROM users"
-        return await Database.execute_query(query=query)
+    async def getAllUsersAdmin(cls):
+        #users.name, users.lastName, users.emailAddress, organizations.name
+        query = ("SELECT users.name, users.lastName, users.emailAddress, organizationalRoles.name as Role, organizations.name as organizationName "
+                 "FROM organizations join userRoleToOrganization join users join organizationalRoles on "
+                 "organizations.id = userRoleToOrganization.organizationId and "
+                 "userRoleToOrganization.userId = users.id and organizationalRoles.id = userRoleToOrganization.roleId")
+
+        result = await execute_query(query=query)
+        return result
+
+    @classmethod
+    async def getAllUsersSuperUser(cls, organizationId: str):
+        # users.name, users.lastName, users.emailAddress, organizations.name
+        query = (
+            "SELECT users.name, users.lastName, users.emailAddress, organizationalRoles.name as Role, organizations.name as organizationName "
+            "FROM organizations join userRoleToOrganization join users join organizationalRoles on "
+            "organizations.id = userRoleToOrganization.organizationId and "
+            "userRoleToOrganization.userId = users.id and organizationalRoles.id = userRoleToOrganization.roleId"
+            f" WHERE organizations.id = '{organizationId}'")
+
+        result = await execute_query(query=query)
+        return result
 
     #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     # Reset the database
@@ -24,7 +43,7 @@ class UserService:
         print("deleting all users")
         try:
             query = ["DELETE FROM users where 0=0"]
-            await Database.execute_transaction(queries=query)
+            await execute_transaction(queries=query)
             return {"message": "Deleted all users successfully"}
         except Exception as e:
             print(f"userService-deleteAll: {e}")
@@ -38,7 +57,7 @@ class UserService:
     @classmethod
     async def getUserById(cls, userId: str):
         query = f"SELECT * FROM users WHERE id ='{userId}'"
-        return await Database.execute_query(query=query)
+        return await execute_query(query=query)
 
 
     #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -49,17 +68,17 @@ class UserService:
         emailAddress = emailAddress.lower()
         # print("getting user by email-haha-UserService")
         query = f"SELECT * FROM users WHERE emailAddress ='{emailAddress}'"
-        return await Database.execute_query(query=query)
+        return await execute_query(query=query)
 
 
     #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    # Add a user by dictionary and validate the dictionary before adding the user
+    # Add a user by dictionary WITHOUT validating the fields
     @classmethod
     async def addUserByDictNoValidation(cls, user: dict):
         query = [(f"INSERT INTO users (id, name, lastName, emailAddress, password)"
                  f" VALUES ('{user['id']}', '{user['name']}','{user['lastName']}', '{user['emailAddress']}', '{user['password']}')")]
         try:
-            operationSuccess = await Database.execute_transaction(queries=query)
+            operationSuccess = await execute_transaction(queries=query)
             if operationSuccess:
                 return user
             else:
@@ -68,26 +87,30 @@ class UserService:
             raise ValueError(e)
 
     @classmethod
-    def getUserOrganizationIdByUserId(cls, userId):
-        databaseResult  = Database.execute_query(f"SELECT * FROM userToOrganization WHERE userId = '{userId}'")
-        print(databaseResult)
-        # if(len(databaseResult) > 0):
-        #     if(databaseResult[0]["organizationId"] == 0):
-        #         return 0
-        #     else:
-        #         return databaseResult[0]["organizationId"]
-        # print("UserType-get in UserService")
-        return {"roles": ["ADMIN", "USER"]}
+    async def getUserOrganizationIdByUserId(cls, userId):
+        databaseResult  = await execute_query(f"SELECT organizationId FROM userRoleToOrganization WHERE userId = '{userId}'")
+        return databaseResult[0]["organizationId"]
 
     @classmethod
     async def getUserRoleByUserId(cls, id):
         # Control if the user is a super user
         query = f"SELECT name FROM userRoleToOrganization inner join organizationalRoles on userRoleToOrganization.roleId = organizationalRoles.id where userId = '{id}'"
         try:
-            userRoles = await Database.execute_query(query=query)
+            userRoles = await execute_query(query=query)
             userRolesArray = []
             for role in userRoles:
                 userRolesArray.append(role["name"])
             return userRolesArray
         except Exception as e:
             return {"error": str(e)}
+
+    @classmethod
+    async def IsThisEmailAddressAlreadyRegistered(cls, emailAddress: str):
+        try:
+            result  = await cls.getUserByEmail(emailAddress)
+            if len(result) > 0:
+                raise ValueError("Email is already registered.")
+            else:
+                return False
+        except Exception as e:
+            raise ValueError(e)

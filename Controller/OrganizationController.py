@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from fastapi import APIRouter
+from starlette.responses import JSONResponse
 
 from Controller import UserController
 from Model.Entity.Organization import Organization
@@ -35,19 +36,22 @@ async def post_organization(organizationInfo : dict):
             "password": User.get_password_hash(organizationInfo["superuser_password"])
         }
         User.validateNewUserInfo(justSuperUser["name"], justSuperUser["lastName"], justSuperUser["emailAddress"])
-        isSuperUserEmailRegistered = await UserService.getUserByEmail(justSuperUser["emailAddress"])
 
-        if len(isSuperUserEmailRegistered) > 0:
-            raise ValueError("Email is already registered.")
+        # control if the email is already registered for another user
+        await UserService.IsThisEmailAddressAlreadyRegistered(justSuperUser["emailAddress"])
+
+        #isSuperUserEmailRegistered = await UserService.getUserByEmail(justSuperUser["emailAddress"])
+        #if len(isSuperUserEmailRegistered) > 0:
+        #    raise ValueError("Email is already registered.")
 
         try:
-            superUserRegister = await UserService.addUserByDictNoValidation(justSuperUser)
+            await UserService.addUserByDictNoValidation(justSuperUser)
         except ValueError as e:
             raise ValueError(f"Could not register superuser.{e}")
 
         try:
             # print(f"org_Contro: L48: justOrganization: {justOrganization}")
-            organizationRegister =  await OrganizationService.addOrganization(justOrganization)
+            await OrganizationService.addOrganization(justOrganization)
         except ValueError as e:
             raise ValueError(f"Superuser is registered but could not register organization.{e}")
 

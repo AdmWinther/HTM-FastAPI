@@ -9,10 +9,10 @@ CsrfRouter = APIRouter()
 @CsrfRouter.get("/")
 async def makeNewCsrfToken(request: Request):
     if (request.cookies.get("jwt_token") == None):
-        return JSONResponse({"detail": "Unauthorized."}, status_code=401)
+        return JSONResponse({"error": "Unauthorized."}, status_code=401)
     else:
         if JWTtoken.verifyToken(request.cookies.get("jwt_token")) == False:
-            return JSONResponse({"detail": "Unauthorized."}, status_code=401)
+            return JSONResponse({"error": "Unauthorized."}, status_code=401)
         token = request.cookies.get("jwt_token")
         payload = JWTtoken.getTokenPayload(token)
         userId = payload['id']
