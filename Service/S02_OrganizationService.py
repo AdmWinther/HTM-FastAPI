@@ -2,7 +2,7 @@ import os
 from uuid import uuid4
 
 from Model.Entity.Organization import Organization
-from Service.Database import execute_query, insertIntoTable, execute_transaction
+from Service.S00_Database import execute_query, insertIntoTable, execute_transaction
 
 class OrganizationService:
     @classmethod

@@ -3,12 +3,12 @@ from uuid import uuid4
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from Controller import UserController
+from Controller import C01_UserController
 from Model.Entity.Organization import Organization
-from Service.OrganizationService import OrganizationService
+from Service.S02_OrganizationService import OrganizationService
 from Model.Entity.User import User
 from Service.OrganizationalRolesService import OrganizationalRolesService
-from Service.UserService import UserService
+from Service.S01_UserService import UserService
 from Service.userRoleToOrganizationService import userRoleToOrganizationService
 
 organizationRouter = APIRouter()

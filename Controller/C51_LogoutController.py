@@ -1,14 +1,7 @@
 import os
-from http.client import responses
-from tabnanny import verbose
 
-from fastapi import APIRouter, Form, Response
-from starlette.responses import JSONResponse
-from Model.Entity.User import User
+from fastapi import APIRouter, Response
 from Service.CSRFService import CSRFService
-from Service.UserService import UserService
-from passlib.context import CryptContext
-from Controller.JWTtoken import  create_access_token
 
 LogoutRouter = APIRouter()
 

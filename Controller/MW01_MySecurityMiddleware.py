@@ -2,12 +2,11 @@ import os
 from tabnanny import verbose
 
 from fastapi import Request
-from sqlalchemy import false
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-from Controller.JWTtoken import verifyToken, getTokenPayload, renewToken, getJwtTokenFromRequestHeader, getUserRoleFromJwtTokenPayload
-from Controller.JWTtoken import getCsrfTokenFromRequestHeader, isTokenAboutToExpire
-from Controller.EndpointAccess import accessRoles
+from utility.JWTtoken import verifyToken, renewToken, getJwtTokenFromRequest, getUserRoleFromJwtTokenPayload
+from utility.JWTtoken import isTokenAboutToExpire
+from Controller.C00_EndpointAccess import accessRoles
 
 def isCookiePresentInTheRequest(request: Request):
     if "cookie" not in request.headers:
@@ -16,7 +15,7 @@ def isCookiePresentInTheRequest(request: Request):
         return True
 
 def isProvidedCookieValid(request: Request):
-    JwtToken = getJwtTokenFromRequestHeader(request)
+    JwtToken = getJwtTokenFromRequest(request)
     isTokenValid = verifyToken(JwtToken)
     if isTokenValid:
         return True
@@ -24,7 +23,7 @@ def isProvidedCookieValid(request: Request):
         return False
 
 async def IsUserRoleAllowedToAccessTheEndpoint(request: Request):
-    JwtToken = getJwtTokenFromRequestHeader(request)
+    JwtToken = getJwtTokenFromRequest(request)
     # Get the user role from the token payload
     # The user might have multiple roles. The roles are stored in a list.
     userRole = getUserRoleFromJwtTokenPayload(JwtToken)
@@ -69,7 +68,7 @@ class MySecurityMiddleware(BaseHTTPMiddleware):
                 if isProvidedCookieValid(request):
                     if await IsUserRoleAllowedToAccessTheEndpoint(request):
                         #print("Redirect to the next middleware or call the endpoint")
-                        JwtToken = getJwtTokenFromRequestHeader(request)
+                        JwtToken = getJwtTokenFromRequest(request)
                         response = await call_next(request)
                         if isTokenAboutToExpire(JwtToken):
                             newJwtToken = renewToken(JwtToken)

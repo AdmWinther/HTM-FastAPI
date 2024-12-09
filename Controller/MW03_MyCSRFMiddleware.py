@@ -3,7 +3,7 @@ import json
 
 from starlette.responses import JSONResponse
 
-from Controller.EndpointAccess import csrfProtection
+from Controller.C00_EndpointAccess import csrfProtection
 
 from starlette.middleware.base import BaseHTTPMiddleware
 

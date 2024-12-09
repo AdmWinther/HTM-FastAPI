@@ -1,14 +1,17 @@
 from datetime import datetime
+from uuid import uuid4
+
+# class MyClass:
+#     @classmethod
+#     def myMethod(cls):
+#         print("Hello World")
+#
+#
+# MyClass.myMethod()
+#
+myDictionary: dict= {"id": "dfasdfdf", "name": "Baloue"}
 
 
-class MyClass:
-    @classmethod
-    def myMethod(cls):
-        print("Hello World")
+print(myDictionary)
 
-
-MyClass.myMethod()
-
-from Model.Entity.User import User
-
-print(datetime.now())
+print(uuid4())

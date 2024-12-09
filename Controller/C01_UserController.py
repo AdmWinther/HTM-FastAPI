@@ -1,18 +1,14 @@
 import os
-from typing import List
 from uuid import uuid4
 
-from Service.Database import execute_transaction
+from Service.S00_Database import execute_transaction
 from fastapi import APIRouter, Request
 from starlette.responses import JSONResponse
-from urllib3 import request
 
-from Controller import JWTtoken
-from Controller.JWTtoken import getJwtTokenFromRequestHeader
-from Model.Entity.Organization import Organization
-from Service.OrganizationService import OrganizationService
+from utility import JWTtoken
+from utility.JWTtoken import getJwtTokenFromRequest
 from Service.OrganizationalRolesService import OrganizationalRolesService
-from Service.UserService import UserService
+from Service.S01_UserService import UserService
 from Service.userRoleToOrganizationService import userRoleToOrganizationService
 from Model.Entity.User import User
 
@@ -21,7 +17,7 @@ UserRouter = APIRouter()
 
 @UserRouter.get("/all")
 async def getAllUsers(request : Request):
-    token: str = getJwtTokenFromRequestHeader(request)
+    token: str = getJwtTokenFromRequest(request)
     tokenPayload = JWTtoken.getTokenPayload(token)
     userRoles  = tokenPayload["role"]
     userMainRole = userRoles[0]
@@ -53,7 +49,7 @@ async def postUser(userInfo : dict, request: Request):
 
         #now the new user data is validated and we are sure that the user email is not registered before
         #Next step is to control if the request is coming from a superuser
-        JwtToken : str = getJwtTokenFromRequestHeader(request)
+        JwtToken : str = getJwtTokenFromRequest(request)
         tokenPayload = JWTtoken.getTokenPayload(JwtToken)
         userRoles  = tokenPayload["role"]
         if "SUPERUSER" not in userRoles:
@@ -152,8 +148,21 @@ async def getUserByEmail(emailAddress: str):
 
 @UserRouter.get("/userRole")
 async def getUserRoleEndpoint(request: Request):
-    token: str = getJwtTokenFromRequestHeader(request)
+    token: str = getJwtTokenFromRequest(request)
     tokenPayload = JWTtoken.getTokenPayload(token)
     print(f"FETCH usrRoles for {tokenPayload['sub']}")
     userRolesArray = await UserService.getUserRoleByUserId(tokenPayload['id'])
     return {"roles": userRolesArray}
+
+@UserRouter.get("/allOrganizationUsers")
+async def getAllUsers(request : Request):
+    token: str = getJwtTokenFromRequest(request)
+    tokenPayload = JWTtoken.getTokenPayload(token)
+    userRoles  = tokenPayload["role"]
+    userMainRole = userRoles[0]
+    if userMainRole == "SUPERUSER":
+        #Superuser can only see the users of its own organization
+        organizationId = await UserService.getUserOrganizationIdByUserId(tokenPayload["id"])
+        return await UserService.getOrganizationUsers_OnlyIdAndNameAndLastName(organizationId)
+
+    return {"error": "Unauthorized"}

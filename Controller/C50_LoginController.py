@@ -1,12 +1,10 @@
 import os
-from http.client import responses
 
 from fastapi import APIRouter, Form, Response
 from starlette.responses import JSONResponse
-from Model.Entity.User import User
-from Service.UserService import UserService
+from Service.S01_UserService import UserService
 from passlib.context import CryptContext
-from Controller.JWTtoken import  create_access_token
+from utility.JWTtoken import  create_access_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

@@ -1,8 +1,7 @@
-from multiprocessing.managers import Array
 from uuid import uuid4
 
 from Model.Entity.User import User
-from Service.Database import execute_query, insertIntoTable, execute_transaction
+from Service.S00_Database import execute_query, insertIntoTable, execute_transaction
 import aiosqlite
 
 
@@ -26,6 +25,19 @@ class UserService:
         # users.name, users.lastName, users.emailAddress, organizations.name
         query = (
             "SELECT users.name, users.lastName, users.emailAddress, organizationalRoles.name as Role, organizations.name as organizationName "
+            "FROM organizations join userRoleToOrganization join users join organizationalRoles on "
+            "organizations.id = userRoleToOrganization.organizationId and "
+            "userRoleToOrganization.userId = users.id and organizationalRoles.id = userRoleToOrganization.roleId"
+            f" WHERE organizations.id = '{organizationId}'")
+
+        result = await execute_query(query=query)
+        return result
+
+    @classmethod
+    async def getOrganizationUsers_OnlyIdAndNameAndLastName(cls, organizationId: str):
+        # users.name, users.lastName, users.emailAddress, organizations.name
+        query = (
+            "SELECT users.id, users.name, users.lastName "
             "FROM organizations join userRoleToOrganization join users join organizationalRoles on "
             "organizations.id = userRoleToOrganization.organizationId and "
             "userRoleToOrganization.userId = users.id and organizationalRoles.id = userRoleToOrganization.roleId"

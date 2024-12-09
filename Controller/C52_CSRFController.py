@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from starlette.responses import JSONResponse
 
-from Controller import JWTtoken
+from utility import JWTtoken
 from Service.CSRFService import CSRFService
 
 CsrfRouter = APIRouter()

@@ -2,9 +2,9 @@ import uuid
 
 from fastapi import Request
 
-from Controller import JWTtoken
+from utility import JWTtoken
 
-from Service import Database
+from Service import S00_Database as Database
 
 class CSRFService:
     @classmethod

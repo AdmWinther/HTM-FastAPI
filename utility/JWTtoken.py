@@ -91,12 +91,12 @@ def isTokenAboutToExpire(token: str):
         return False
 
 def getUsernameFromRequest(request: Request):
-    token: str = getJwtTokenFromRequestHeader(request)
+    token: str = getJwtTokenFromRequest(request)
     tokenPayload : dict = getTokenPayload(token)
     return tokenPayload["sub"]
 
 def getUserIdFromRequest(request: Request):
-    token: str = getJwtTokenFromRequestHeader(request)
+    token: str = getJwtTokenFromRequest(request)
     tokenPayload : dict = getTokenPayload(token)
     return tokenPayload["id"]
 
@@ -108,7 +108,7 @@ def getAllCookiesFromRequestHeader(request: Request):
     if verbose: print(f"allCookies made in getAllCookiesFromRequestHeader are: {allCookies}")
     return allCookies
 
-def getJwtTokenFromRequestHeader(request: Request):
+def getJwtTokenFromRequest(request: Request):
     verbose: bool = os.getenv("VERBOSE") == "True"
     allCookies = getAllCookiesFromRequestHeader(request)
     for cookie in allCookies:
