@@ -11,19 +11,18 @@ from Service.OrganizationalRolesService import OrganizationalRolesService
 from Service.S01_UserService import UserService
 from Service.userRoleToOrganizationService import userRoleToOrganizationService
 from Model.Entity.User import User
+from utility.GetUserMainRoleFromRequest import GetUserMainRoleFromRequest
+from utility.GetUserIdFromRequest import GetUserIdFromRequest
 
 UserRouter = APIRouter()
 
 
 @UserRouter.get("/all")
 async def getAllUsers(request : Request):
-    token: str = getJwtTokenFromRequest(request)
-    tokenPayload = JWTtoken.getTokenPayload(token)
-    userRoles  = tokenPayload["role"]
-    userMainRole = userRoles[0]
+    userMainRole = GetUserMainRoleFromRequest(request)
     if userMainRole == "SUPERUSER":
         #Superuser can only see the users of its own organization
-        organizationId = await UserService.getUserOrganizationIdByUserId(tokenPayload["id"])
+        organizationId = await UserService.getUserOrganizationIdByUserId(GetUserIdFromRequest(request))
         return await UserService.getAllUsersSuperUser(organizationId)
 
     if userMainRole == "ADMIN":
