@@ -12,7 +12,8 @@ class UserService:
     @classmethod
     async def getAllUsersAdmin(cls):
         #users.name, users.lastName, users.emailAddress, organizations.name
-        query = ("SELECT users.name, users.lastName, users.emailAddress, organizationalRoles.name as Role, organizations.name as organizationName "
+        query = ("SELECT users.id, users.name, users.lastName, users.emailAddress, organizationalRoles.name as Role, "
+                 " organizations.name as organizationName "
                  "FROM organizations join userRoleToOrganization join users join organizationalRoles on "
                  "organizations.id = userRoleToOrganization.organizationId and "
                  "userRoleToOrganization.userId = users.id and organizationalRoles.id = userRoleToOrganization.roleId")
@@ -24,7 +25,8 @@ class UserService:
     async def getAllUsersSuperUser(cls, organizationId: str):
         # users.name, users.lastName, users.emailAddress, organizations.name
         query = (
-            "SELECT users.name, users.lastName, users.emailAddress, organizationalRoles.name as Role, organizations.name as organizationName "
+            "SELECT users.id, users.name, users.lastName, users.emailAddress, organizationalRoles.name as Role, "
+            "organizations.name as organizationName "
             "FROM organizations join userRoleToOrganization join users join organizationalRoles on "
             "organizations.id = userRoleToOrganization.organizationId and "
             "userRoleToOrganization.userId = users.id and organizationalRoles.id = userRoleToOrganization.roleId"

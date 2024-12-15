@@ -18,7 +18,8 @@ accessRoles = {
 
         "/api/organization/all": ["ADMIN"],
 
-        "/api/project/all": ["ADMIN", "SUPERUSER", "SUPPORTER"],
+        "/api/project/all": ["ADMIN", "SUPERUSER", "SUPPORTER", "USER"],
+        "/api/project/projectInfo": ["ADMIN", "SUPERUSER", "SUPPORTER", "USER"],
 
         "/api/csrf/": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
@@ -48,6 +49,7 @@ csrfProtection = {
         "/api/role/reset": False,
 
         "/api/organization/all": False,
+        "/api/project/projectInfo" : False,
 
         "/api/project/all": False,
 

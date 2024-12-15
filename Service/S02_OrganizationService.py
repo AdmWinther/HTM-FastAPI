@@ -7,7 +7,12 @@ from Service.S00_Database import execute_query, insertIntoTable, execute_transac
 class OrganizationService:
     @classmethod
     async def getAllOrganizations(cls):
-        query = "SELECT * FROM organizations"
+        query = (f"SELECT organizations.id, organizations.name as OrganizationName, users.name as superUserName, "
+                 "users.lastName as superUserLastName, users.emailAddress as superUserEmailAddress "
+                 "FROM organizations inner join userRoleToOrganization on "
+                 "organizations.id = userRoleToOrganization.organizationId inner join users on "
+                 "userRoleToOrganization.userId = users.id inner join organizationalRoles on "
+                 "userRoleToOrganization.roleId = organizationalRoles.id WHERE organizationalRoles.name = 'SUPERUSER'")
         return await execute_query(query=query)
 
     @classmethod

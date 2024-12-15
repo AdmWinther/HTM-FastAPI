@@ -31,6 +31,11 @@ async def IsUserRoleAllowedToAccessTheEndpoint(request: Request):
     # Control Which useRoles are allowed to access the requested endpoint.
     requestType = request.method
     endpoint = request.url.path
+    #Control if there is an ID at the end of the endpoint
+    if "/id/" in endpoint:
+        #Cut what ever that is after /id/
+        endpoint = endpoint.split("/id/")[0]
+        print(f"Endpoint is cut to {endpoint}")
     allowedRole = accessRoles[requestType][endpoint]
 
     # Control if the user has the required role to access the endpoint

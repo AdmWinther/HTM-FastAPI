@@ -21,6 +21,11 @@ class MyCSRFMiddleware(BaseHTTPMiddleware):
         # Control if the requested endpoint is CSRF protected
         requestType = request.method
         endpoint = request.url.path
+        # Control if there is an ID at the end of the endpoint
+        if "/id/" in endpoint:
+            # Cut what ever that is after /id/
+            endpoint = endpoint.split("/id/")[0]
+            print(f"Endpoint is cut to {endpoint}")
 
         IsEndpointCsrfProtected: bool = csrfProtection[requestType][endpoint]
         if IsEndpointCsrfProtected:
