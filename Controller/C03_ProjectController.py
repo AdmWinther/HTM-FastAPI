@@ -51,7 +51,7 @@ async def getProjectInfo(projectId : str, request: Request):
     else:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
-@projectRouter.post("/projectName")
+@projectRouter.post("/requestProjectName")
 async def getProjectName(requestData: dict, request: Request):
     projectId = requestData["projectId"]
     if await isUserAllowedToSeeProjectInfo(projectId, request):
