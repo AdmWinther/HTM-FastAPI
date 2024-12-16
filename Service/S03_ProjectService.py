@@ -89,6 +89,7 @@ class ProjectService:
     @classmethod
     async def isProjectIdValid(cls, projectId):
         query = f"SELECT id FROM projects WHERE id = '{projectId}'"
+        print("query in isProjectIdValid: ", query)
         result = await execute_query(query=query)
         if len(result) == 0:
             return False
@@ -109,21 +110,69 @@ class ProjectService:
 
     @classmethod
     async def getProjectInfo(cls, projectId):
-        query = (
-                "SELECT "
-                "projects.name as projectsName, "
-                "projects.id as id, "
-                "users.name as usersName, "
-                "users.lastName as usersLastName, "
-                "users.emailAddress as usersEmailAddress, "
-                "users.id as usersId, "
-                "projectRoles.name as usersRole "
-                "FROM "
-                "projects inner join userRoleToProject on projects.id=userRoleToProject.projectId "
-                "inner Join users on users.id=userRoleToProject.userId "
-                "inner join projectRoles on projectRoles.id=userRoleToProject.roleId "
-                f"WHERE projects.id = '{projectId}'")
+        projectInfo: dict = {"id": projectId, "projectName": await cls.getProjectName(projectId),
+                             "projectManager": await cls.getProjectManager(projectId),
+                             "editors": await cls.getUsersWithSpecialRoleToProject(projectId, "READ_WRITE"),
+                             "reviewers": await cls.getUsersWithSpecialRoleToProject(projectId, "REVIEWER"),
+                             "Approve": await cls.getUsersWithSpecialRoleToProject(projectId, "APPROVE")}
+        return projectInfo
+
+
+
+
+        # query = (
+        #         "SELECT "
+        #         "projects.name as projectsName, "
+        #         "projects.id as id, "
+        #         "users.name as usersName, "
+        #         "users.lastName as usersLastName, "
+        #         "users.emailAddress as usersEmailAddress, "
+        #         "users.id as usersId, "
+        #         "projectRoles.name as usersRole "
+        #         "FROM "
+        #         "projects inner join userRoleToProject on projects.id=userRoleToProject.projectId "
+        #         "inner Join users on users.id=userRoleToProject.userId "
+        #         "inner join projectRoles on projectRoles.id=userRoleToProject.roleId "
+        #         f"WHERE projects.id = '{projectId}'")
         print(query)
         result = await execute_query(query=query)
-        print(result)
+        return result
+
+    @classmethod
+    async def getProjectName(cls, projectId):
+        query = f"SELECT name FROM projects WHERE id = '{projectId}'"
+        result = await execute_query(query=query)
+        return result[0]["name"]
+
+    @classmethod
+    async def getProjectManager(cls, projectId):
+        query = (
+            "SELECT users.name, users.lastName, users.emailAddress, users.id "
+            "FROM userRoleToProject join users on userRoleToProject.userId = users.id "
+            f"WHERE userRoleToProject.projectId = '{projectId}'")
+        result = await execute_query(query=query)
+        return result
+
+    @classmethod
+    async def getUsersWithSpecialRoleToProject(cls, projectId, roleName):
+        query = (
+            "SELECT users.name, users.lastName, users.emailAddress, users.id "
+            "FROM userRoleToProject join users on userRoleToProject.userId = users.id "
+            "inner join projectRoles on userRoleToProject.roleId = projectRoles.id "
+            f"WHERE userRoleToProject.projectId = '{projectId}' and projectRoles.name = '{roleName}'")
+        result = await execute_query(query=query)
+        return result
+
+    @classmethod
+    async def getProjectProp(cls, projectId, prop):
+        directInProjectTable = ["name", "id", "description"]
+        if(prop in directInProjectTable):
+            query = f"SELECT {prop} FROM projects WHERE id = '{projectId}'"
+        else:
+            query = (
+                "SELECT users.name, users.lastName, users.emailAddress, users.id "
+                "FROM userRoleToProject join users on userRoleToProject.userId = users.id "
+                "inner join projectRoles on userRoleToProject.roleId = projectRoles.id "
+                f"WHERE userRoleToProject.projectId = '{projectId}' and projectRoles.name = '{prop}'")
+        result = await execute_query(query=query)
         return result

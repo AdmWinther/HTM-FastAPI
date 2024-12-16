@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request
+from sqlalchemy import false
 from starlette.responses import JSONResponse
 
 from Model.Entity.Project import Project
@@ -45,33 +46,52 @@ async def getAllProjects(request : Request):
 
 @projectRouter.get("/projectInfo/id/{projectId}")
 async def getProjectInfo(projectId : str, request: Request):
+    if await isUserAllowedToSeeProjectInfo(projectId, request):
+        return await ProjectService.getProjectInfo(projectId)
+    else:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+@projectRouter.post("/projectName")
+async def getProjectName(requestData: dict, request: Request):
+    projectId = requestData["projectId"]
+    if await isUserAllowedToSeeProjectInfo(projectId, request):
+        return await ProjectService.getProjectName(projectId)
+    else:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+
+
+async def isUserAllowedToSeeProjectInfo(projectId : str, request: Request):
     #is it a valid projectId?
+    isAuthorized = False
     isItValidProjectId = await ProjectService.isProjectIdValid(projectId)
     if not isItValidProjectId:
         return JSONResponse({"error": "Invalid projectId"}, status_code=404)
     userId = GetUserIdFromRequest(request)
     userMainRole= GetUserMainRoleFromRequest(request)
-    print("User main role: ", userMainRole)
     userOrganizationId = await UserService.getUserOrganizationIdByUserId(userId)
     projectOrganization = await ProjectService.getOrganizationIdUsingProjectId(projectId)
 
     #Control if user is authorized to see the project info
-    if(userOrganizationId != projectOrganization):
-        return JSONResponse({"error": "The project is not in the users organization."}, status_code=401)
-
-    #If the user is SUPERUSER or ADMIN, then the user is authorized to see the project info
-    isAuthorized = False
-    if userMainRole == "SUPERUSER" or userMainRole == "ADMIN":
+    #if user is ADMIN, he can see all the projects
+    if userMainRole == "ADMIN":
         isAuthorized = True
+    else:
+        if userOrganizationId != projectOrganization:
+            return JSONResponse({"error": "The project is not in the users organization."}, status_code=401)
 
-    #Does user have any role towards the project?
-    doesUserHasAnyRoleTowardsProject: bool= await ProjectService.doesUserHaveAccessToProject(projectId, userId)
-    if doesUserHasAnyRoleTowardsProject:
-        isAuthorized = True
+        #If the user is SUPERUSER, then the user is authorized to see the project info
+        if userMainRole == "SUPERUSER" or userMainRole == "ADMIN":
+            isAuthorized = True
+
+        #Does user have any role towards the project?
+        doesUserHasAnyRoleTowardsProject: bool= await ProjectService.doesUserHaveAccessToProject(projectId, userId)
+        if doesUserHasAnyRoleTowardsProject:
+            isAuthorized = True
+
     if isAuthorized:
-        print("User has access to the project.")
         #If user has any role towards the project, the user should be able to see the project info like the project name,
         #description, project manager, editor, reviewer, approved by, etc
-        return await ProjectService.getProjectInfo(projectId)
+        return True
     else:
-        return JSONResponse({"error": "User has no role towards the project."}, status_code=401)
+        return False

@@ -20,6 +20,7 @@ accessRoles = {
 
         "/api/project/all": ["ADMIN", "SUPERUSER", "SUPPORTER", "USER"],
         "/api/project/projectInfo": ["ADMIN", "SUPERUSER", "SUPPORTER", "USER"],
+        "/api/project/projectName": ["ADMIN", "SUPERUSER", "SUPPORTER", "USER"],
 
         "/api/csrf/": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
@@ -29,6 +30,7 @@ accessRoles = {
         "/api/organization/new": ["ADMIN"],
 
         "/api/project/new": ["SUPERUSER"],
+        "/api/project/projectName": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
 
         "/logout": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
@@ -50,6 +52,7 @@ csrfProtection = {
 
         "/api/organization/all": False,
         "/api/project/projectInfo" : False,
+        "/api/project/projectName" : False,
 
         "/api/project/all": False,
 
@@ -63,6 +66,7 @@ csrfProtection = {
         "/api/organization/new": True,
 
         "/api/project/new": True,
+        "/api/project/projectName": True,
 
         "/login": False,
         "/logout": False,
