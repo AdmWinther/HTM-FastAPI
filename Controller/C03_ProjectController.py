@@ -44,12 +44,51 @@ async def getAllProjects(request : Request):
 
     return {"error": "Unauthorized"}
 
-@projectRouter.get("/projectInfo/id/{projectId}")
-async def getProjectInfo(projectId : str, request: Request):
+@projectRouter.post("/requestProjectInfo")
+async def getProjectName(requestData: dict, request: Request):
+    projectId = requestData["projectId"]
     if await isUserAllowedToSeeProjectInfo(projectId, request):
-        return await ProjectService.getProjectInfo(projectId)
+        dataFromDatabase =  await ProjectService.getProjectInfo(requestData)
+
+        projectManagers = []
+        projectReviewers = []
+        projectApprovers = []
+        projectReader = []
+
+        for record in dataFromDatabase:
+            if record["userRole"] == "PROJECT_MANAGER":
+                projectManagers.append({
+                    "fullName": f"{record["userName"]} {record["userLastName"]}",
+                    "emailAddress": record["userEmailAddress"]
+                })
+            if record["userRole"] == "REVIEWER":
+                projectReviewers.append({
+                    "fullName": f"{record["userName"]} {record["userLastName"]}",
+                    "emailAddress": record["userEmailAddress"]
+                })
+            if record["userRole"] == "APPROVER":
+                projectApprovers.append({
+                    "fullName": f"{record["userName"]} {record["userLastName"]}",
+                    "emailAddress": record["userEmailAddress"]
+                })
+            if record["userRole"] == "READER":
+                projectReader.append({
+                    "fullName": f"{record["userName"]} {record["userLastName"]}",
+                    "emailAddress": record["userEmailAddress"]
+                })
+        dataToSend = {
+            "projectName": dataFromDatabase[0]["projectName"],
+            "projectDescription": dataFromDatabase[0]["projectDescription"],
+            "projectId": projectId,
+            "projectManagers": projectManagers,
+            "projectReviewers": projectReviewers,
+            "projectApprovers": projectApprovers,
+            "projectReaders": projectReader
+        }
+        return dataToSend
     else:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
 
 @projectRouter.post("/requestProjectName")
 async def getProjectName(requestData: dict, request: Request):

@@ -109,32 +109,36 @@ class ProjectService:
             return True
 
     @classmethod
-    async def getProjectInfo(cls, projectId):
-        projectInfo: dict = {"id": projectId, "projectName": await cls.getProjectName(projectId),
-                             "projectManager": await cls.getProjectManager(projectId),
-                             "editors": await cls.getUsersWithSpecialRoleToProject(projectId, "READ_WRITE"),
-                             "reviewers": await cls.getUsersWithSpecialRoleToProject(projectId, "REVIEWER"),
-                             "Approve": await cls.getUsersWithSpecialRoleToProject(projectId, "APPROVE")}
-        return projectInfo
+    async def getProjectInfo_Obsolete(cls, requestData):
+        projectId = requestData["projectId"]
+        keys = requestData["prop"]
+        selectedParameters = ""
+        # iterate on the elements of the list keys and for each element join it with a comma
+        for key in keys:
+            selectedParameters += key + ", "
 
+        selectedParameters = selectedParameters[:-2]
+        query = (f"SELECT {selectedParameters} FROM "
+                    f"projects inner join userRoleToProject on projects.id=userRoleToProject.projectId "
+                    f"inner Join users on users.id=userRoleToProject.userId "
+                    f"inner join projectRoles on projectRoles.id=userRoleToProject.roleId "
+                 f"WHERE projects.id = '{projectId}'")
+        print("query in getProjectInfo: ", query)
+        result = await execute_query(query=query)
+        return result
 
-
-
-        # query = (
-        #         "SELECT "
-        #         "projects.name as projectsName, "
-        #         "projects.id as id, "
-        #         "users.name as usersName, "
-        #         "users.lastName as usersLastName, "
-        #         "users.emailAddress as usersEmailAddress, "
-        #         "users.id as usersId, "
-        #         "projectRoles.name as usersRole "
-        #         "FROM "
-        #         "projects inner join userRoleToProject on projects.id=userRoleToProject.projectId "
-        #         "inner Join users on users.id=userRoleToProject.userId "
-        #         "inner join projectRoles on projectRoles.id=userRoleToProject.roleId "
-        #         f"WHERE projects.id = '{projectId}'")
-        print(query)
+    @classmethod
+    async def getProjectInfo(cls, requestData):
+        projectId = requestData["projectId"]
+        query = (f"SELECT projects.id as projectId, projects.name as projectName, projects.description as projectDescription, "
+                    f"users.id as userId, users.name as userName, users.lastName as userLastName, users.emailAddress as userEmailAddress, "
+                    f"projectRoles.name as userRole "
+                 f" FROM "
+                    f"projects inner join userRoleToProject on projects.id=userRoleToProject.projectId "
+                    f"inner Join users on users.id=userRoleToProject.userId "
+                    f"inner join projectRoles on projectRoles.id=userRoleToProject.roleId "
+                 f"WHERE projects.id = '{projectId}'")
+        print("query in getProjectInfo: ", query)
         result = await execute_query(query=query)
         return result
 

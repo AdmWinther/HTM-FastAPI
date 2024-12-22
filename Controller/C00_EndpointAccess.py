@@ -30,6 +30,7 @@ accessRoles = {
 
         "/api/project/new": ["SUPERUSER"],
         "/api/project/requestProjectName": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
+        "/api/project/requestProjectInfo": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
 
         "/logout": ["ADMIN", "USER", "SUPERUSER", "SUPPORTER"],
     },
@@ -65,6 +66,7 @@ csrfProtection = {
 
         "/api/project/new": True,
         "/api/project/requestProjectName": True,
+        "/api/project/requestProjectInfo": True,
 
         "/login": False,
         "/logout": False,
